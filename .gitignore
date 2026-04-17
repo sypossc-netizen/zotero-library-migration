@@ -1,0 +1,21 @@
+# State + logs + reports (library-specific, never commit)
+state.json
+*.log
+missing-pdfs-report.csv
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# Playwright browser state (contains SSO cookies)
+browser-state/
+
+# Secrets
+.env
+.env.local
+
+# macOS
+.DS_Store
