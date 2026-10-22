@@ -45,7 +45,10 @@ UNPAYWALL_EMAIL = os.environ.get("UNPAYWALL_EMAIL", "").strip()
 
 def log(msg):
     line = f"[{time.strftime('%H:%M:%S')}] {msg}"
-    print(line, flush=True)
+    try:
+        print(line, flush=True)
+    except UnicodeEncodeError:
+        print(line.encode("ascii", errors="replace").decode("ascii"), flush=True)
     with LOG_PATH.open("a", encoding="utf-8") as f:
         f.write(line + "\n")
 

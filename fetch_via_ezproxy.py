@@ -64,7 +64,10 @@ LOGIN_TEST_URL = os.environ.get(
 
 def log(msg):
     line = f"[{time.strftime('%H:%M:%S')}] {msg}"
-    print(line, flush=True)
+    try:
+        print(line, flush=True)
+    except UnicodeEncodeError:
+        print(line.encode("ascii", errors="replace").decode("ascii"), flush=True)
     with LOG_PATH.open("a", encoding="utf-8") as f:
         f.write(line + "\n")
 
@@ -237,18 +240,16 @@ async def ensure_logged_in(context, page):
     log("  A browser window should now show URMC SSO / Duo login.")
     log("  Complete login. The URL should change away from '/login?url=...' once done.")
     log("")
-    while True:
-        await asyncio.sleep(1)
+    for attempt in range(180):  # wait up to 3 minutes for SSO/Duo
+        await asyncio.sleep(2)
         url = page.url
-        log(f"[CHECK] URL: {url[:120]}")
+        if attempt % 5 == 0:
+            log(f"[CHECK] URL: {url[:120]}")
         if _looks_logged_in(url):
             log(f"[OK] Looks authenticated. Proceeding.")
             return True
-        log("[STILL ON LOGIN] Press ENTER to recheck, or type 'force' then ENTER to proceed anyway.")
-        resp = input().strip().lower()
-        if resp == "force":
-            log("[FORCED] Proceeding despite login-looking URL.")
-            return True
+    log("[TIMEOUT] Login not detected after 3 minutes. Proceeding anyway.")
+    return True
 
 
 async def extract_pdf_url(page, doi):
